@@ -365,6 +365,13 @@ Responsabilidades:
 - disponibilizar a imagem para o ECS Task Definition;
 - integrar autenticação e permissões com IAM.
 
+Estimativa de custo:
+
+- O ECR cobra principalmente armazenamento das imagens.
+- A referência pública da AWS para repositórios privados é de aproximadamente `US$ 0.10 por GB-mês`.
+- Para uma ou poucas imagens pequenas do desafio, o custo tende a ficar em centavos por mês.
+- Referência: https://aws.amazon.com/ecr/pricing/
+
 Fluxo:
 
 ```text
@@ -398,6 +405,21 @@ Ela define:
 - health checks;
 - role de execução.
 
+Configuração mínima adotada para este desafio:
+
+- CPU: `256` units (`0.25 vCPU`).
+- Memória: `512 MiB`.
+- Desired count: `1`.
+- Sistema: Linux/x86.
+
+Estimativa de custo do Fargate:
+
+- Em `us-east-1`, a referência pública da AWS para Linux/x86 indica cobrança por vCPU/segundo e GB/segundo.
+- Com `0.25 vCPU` e `0.5 GB`, a task fica em aproximadamente `US$ 0.0123/hora`.
+- Rodando 24 horas, isso representa cerca de `US$ 0.30/dia`.
+- Rodando um mês inteiro, isso representa cerca de `US$ 9/mês`.
+- Referência: https://aws.amazon.com/fargate/pricing/
+
 ### ECS Service
 
 O ECS Service mantém a aplicação em execução.
@@ -428,6 +450,14 @@ Responsabilidades:
 - balancear tráfego entre múltiplas tasks;
 - permitir escalabilidade horizontal sem alterar a aplicação.
 
+Estimativa de custo:
+
+- O ALB cobra por hora de uso e por capacidade consumida.
+- A referência pública da AWS mostra cobrança base por Application Load Balancer-hour, além de possíveis custos por LCU conforme tráfego.
+- Para este desafio, mesmo com baixo tráfego, o ALB tende a ser o principal custo fixo da arquitetura.
+- Estimativa base: cerca de `US$ 0.54/dia` ou `US$ 16/mês`, antes de variações por LCU, região e impostos.
+- Referência: https://aws.amazon.com/elasticloadbalancing/pricing/
+
 ## 12. Terraform/OpenTofu
 
 A infraestrutura é descrita como código com Terraform/OpenTofu.
@@ -456,6 +486,14 @@ Outputs relevantes:
 O `terraform apply` não é executado automaticamente no CI. A decisão prioriza controle operacional e evita aplicar mudanças de infraestrutura sem revisão manual.
 
 Como a API não permanece exposta em cloud nesta entrega, o uso de Terraform/OpenTofu representa a forma reprodutível de provisionar a arquitetura AWS quando houver uma conta com orçamento aprovado para execução.
+
+Decisões de custo na infraestrutura:
+
+- Não utilizar NAT Gateway, pois ele adiciona custo fixo relevante para o escopo do desafio.
+- Usar apenas `desired_count = 1` para ECS Service.
+- Usar a menor task Fargate suficiente para a aplicação: `256 CPU / 512 MiB`.
+- Configurar retenção limitada de logs no CloudWatch.
+- Manter `terraform apply` como ação manual.
 
 ## 13. Swagger
 
@@ -625,7 +663,43 @@ Durante o planejamento da solução, ferramentas de IA foram utilizadas para apo
 
 Todas as decisões finais foram revisadas criticamente e ajustadas ao escopo do desafio, priorizando aderência ao enunciado, simplicidade e boas práticas de engenharia.
 
-## 20. Comandos Úteis
+## 20. Estimativa de Custo AWS
+
+As estimativas abaixo consideram `us-east-1`, Linux/x86, 1 task Fargate `0.25 vCPU / 512 MiB`, 1 Application Load Balancer, baixo volume de logs e uma imagem pequena no ECR.
+
+Valores consultados em 14/06/2026 nas páginas públicas de pricing da AWS:
+
+- Fargate: https://aws.amazon.com/fargate/pricing/
+- Application Load Balancer: https://aws.amazon.com/elasticloadbalancing/pricing/
+- ECR: https://aws.amazon.com/ecr/pricing/
+- CloudWatch: https://aws.amazon.com/cloudwatch/pricing/
+- IPv4 público: https://aws.amazon.com/blogs/aws/new-aws-public-ipv4-address-charge-public-ip-insights/
+
+Estimativa por componente:
+
+```text
+ECS Fargate 0.25 vCPU / 512 MiB:  ~US$ 0.30/dia  | ~US$ 9/mês
+Application Load Balancer:         ~US$ 0.54/dia  | ~US$ 16/mês + uso de LCU
+IPv4 público:                      ~US$ 0.12/dia por IP público
+ECR:                               centavos por mês para imagem pequena
+CloudWatch Logs:                   depende do volume de logs; baixo para uso de desafio
+NAT Gateway:                       US$ 0, pois não é utilizado
+```
+
+Estimativa prática para manter a arquitetura ligada:
+
+```text
+1 dia:      ~US$ 1 a US$ 1.50
+3 dias:     ~US$ 3 a US$ 5
+7 dias:     ~US$ 7 a US$ 10
+30 dias:    ~US$ 30 a US$ 40
+```
+
+Esses valores não incluem impostos, variações de região, tráfego, uso adicional de logs, múltiplas tasks ou mudanças futuras de preço da AWS.
+
+Por esse motivo, esta entrega não mantém uma URL pública ativa. Quem avaliar a solução consegue provisionar a infraestrutura com Terraform/OpenTofu, validar a execução em AWS e destruir os recursos ao final para evitar custo recorrente.
+
+## 21. Comandos Úteis
 
 Testes:
 
@@ -658,7 +732,5 @@ Health:
 ```text
 http://localhost:8080/actuator/health
 ```
-
-
 
 

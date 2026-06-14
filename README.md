@@ -695,9 +695,61 @@ Ele executa:
 - upload do JAR como artifact;
 - Docker build.
 
+O workflow de deploy AWS fica em:
+
+```text
+.github/workflows/deploy.yml
+```
+
+Ele é executado manualmente por `workflow_dispatch` e recebe:
+
+- `apply_infrastructure`: quando `false`, executa build, testes, Docker build, `terraform fmt`, `terraform validate` e `terraform plan`;
+- `apply_infrastructure`: quando `true`, também faz bootstrap do ECR, push da imagem Docker e `terraform apply`;
+- `image_tag`: tag opcional da imagem; quando não informada, usa o SHA do commit.
+
+Secrets necessárias no GitHub:
+
+```text
+AWS_ROLE_TO_ASSUME
+AWS_REGION
+```
+
+O workflow usa autenticação por OIDC entre GitHub Actions e AWS. Essa abordagem evita armazenar access keys longas no GitHub e permite limitar permissões por IAM Role.
+
+Permissões AWS necessárias para o deploy:
+
+- ECR;
+- ECS;
+- Elastic Load Balancing;
+- EC2/VPC;
+- IAM Roles;
+- CloudWatch Logs.
+
+O deploy usa tags imutáveis no ECR. Por isso, cada execução deve usar uma tag única, como o SHA do commit.
+
 O fluxo de entrega integra GitHub Actions, Docker, ECR, ECS/Fargate e Terraform/OpenTofu conforme a arquitetura da solução.
 
 O deploy automatizado para AWS é estruturado em duas partes: build e validação da aplicação no CI, e provisionamento da infraestrutura por Terraform/OpenTofu. O `apply` da infraestrutura permanece como uma ação controlada, evitando criação automática de recursos pagos.
+
+Para execução real de `terraform apply` via GitHub Actions, recomenda-se configurar backend remoto para o estado do Terraform, por exemplo S3. Sem backend remoto, o estado fica local ao runner do GitHub Actions e não deve ser usado como operação recorrente de ambiente.
+
+Um exemplo de backend remoto está disponível em:
+
+```text
+infra/terraform/backend.tf.example
+```
+
+Para usar esse exemplo, crie previamente o bucket de estado, copie o conteúdo para `backend.tf`, ajuste `bucket`, `key` e `region`, e então execute `terraform init`.
+
+Fluxo manual recomendado para avaliadores:
+
+```text
+1. Executar o workflow Deploy AWS com apply_infrastructure=false.
+2. Revisar o plano gerado pelo Terraform.
+3. Executar com apply_infrastructure=true apenas se houver orçamento aprovado.
+4. Validar a API pelo DNS do ALB.
+5. Executar terraform destroy ao final da avaliação para evitar custo recorrente.
+```
 
 ## 19. Engenharia de Prompt
 

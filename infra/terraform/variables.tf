@@ -21,3 +21,15 @@ variable "owner" {
   type        = string
   default     = "backend-challenge"
 }
+
+variable "cloudwatch_log_retention_days" {
+  description = "Number of days to retain application logs in CloudWatch."
+  type        = number
+  default     = 7
+}
+
+variable "ecr_images_to_keep" {
+  description = "Maximum number of recent ECR images to keep."
+  type        = number
+  default     = 5
+}

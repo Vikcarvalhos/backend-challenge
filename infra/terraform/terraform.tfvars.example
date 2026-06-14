@@ -2,3 +2,6 @@ aws_region   = "us-east-1"
 project_name = "jwt-validator"
 environment  = "dev"
 owner        = "backend-challenge"
+
+cloudwatch_log_retention_days = 7
+ecr_images_to_keep            = 5

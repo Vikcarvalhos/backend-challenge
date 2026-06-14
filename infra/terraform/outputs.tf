@@ -57,3 +57,23 @@ output "alb_target_group_arn" {
   description = "ARN of the Application Load Balancer target group."
   value       = aws_lb_target_group.app.arn
 }
+
+output "ecs_cluster_name" {
+  description = "Name of the ECS cluster."
+  value       = aws_ecs_cluster.app.name
+}
+
+output "ecs_service_name" {
+  description = "Name of the ECS service."
+  value       = aws_ecs_service.app.name
+}
+
+output "ecs_task_definition_arn" {
+  description = "ARN of the ECS task definition."
+  value       = aws_ecs_task_definition.app.arn
+}
+
+output "ecs_task_execution_role_arn" {
+  description = "ARN of the ECS task execution role."
+  value       = aws_iam_role.ecs_task_execution.arn
+}

@@ -51,3 +51,33 @@ variable "container_port" {
   type        = number
   default     = 8080
 }
+
+variable "container_name" {
+  description = "Name of the application container in the ECS task definition."
+  type        = string
+  default     = "jwt-validator"
+}
+
+variable "image_tag" {
+  description = "Docker image tag deployed by the ECS task definition."
+  type        = string
+  default     = "latest"
+}
+
+variable "task_cpu" {
+  description = "CPU units allocated to the Fargate task."
+  type        = number
+  default     = 256
+}
+
+variable "task_memory" {
+  description = "Memory in MiB allocated to the Fargate task."
+  type        = number
+  default     = 512
+}
+
+variable "desired_count" {
+  description = "Number of ECS tasks kept running by the service."
+  type        = number
+  default     = 1
+}

@@ -1,6 +1,7 @@
 package com.challengeitau.jwtvalidator.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -83,6 +84,39 @@ class JwtValidationControllerIntegrationTest {
                         .content(requestBody(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.valid").value(false));
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("Deve retornar 400 para token vazio")
+    void shouldReturnBadRequestForBlankToken() throws Exception {
+        mockMvc.perform(post(VALIDATION_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody("")))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("Deve retornar 400 para token ausente")
+    void shouldReturnBadRequestForMissingToken() throws Exception {
+        mockMvc.perform(post(VALIDATION_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("Deve retornar 400 para JSON malformado")
+    void shouldReturnBadRequestForMalformedJson() throws Exception {
+        mockMvc.perform(post(VALIDATION_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""));
     }
 
     private String requestBody(String token) {

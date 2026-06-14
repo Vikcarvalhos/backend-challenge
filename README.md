@@ -153,6 +153,8 @@ JWT Validator
 
 Essa arquitetura utiliza serviços gerenciados da AWS para reduzir complexidade operacional, manter a aplicação stateless e permitir escalabilidade horizontal.
 
+Esta entrega não mantém um ambiente cloud ativo nem uma URL pública permanente para evitar custo recorrente em conta pessoal. A solução entrega aplicação containerizada, pipeline de CI e arquitetura de infraestrutura como código para que o ambiente seja reproduzido em AWS quando necessário.
+
 ## 5. Tecnologias
 
 Aplicação:
@@ -274,6 +276,8 @@ Fluxo de execução e implantação:
 - Application Load Balancer expõe a API e direciona tráfego para as tasks.
 - Terraform/OpenTofu descreve e provisiona a infraestrutura.
 
+A exposição pública em cloud é descrita pela arquitetura e pela infraestrutura como código. O ambiente não permanece ativo nesta entrega por decisão de controle de custo.
+
 ### 7.5 Observabilidade
 
 A solução cobre os três pilares de observabilidade:
@@ -318,6 +322,8 @@ A especificação OpenAPI fica disponível em:
 http://localhost:8080/v3/api-docs
 ```
 
+Swagger UI foi escolhido como ferramenta oficial de execução por estar integrado à própria aplicação, documentar o contrato OpenAPI e permitir testar os cenários do desafio sem depender de coleção externa.
+
 ## 8. Decisões Conscientemente Não Adotadas
 
 ### HATEOAS
@@ -359,6 +365,14 @@ Não foi adotada porque o desafio não fornece chave secreta, chave pública, JW
 A alternativa escolhida foi validar estrutura, payload e claims.
 
 O trade-off aceito é não afirmar autenticidade criptográfica do token, mantendo a validação limitada às regras informadas.
+
+### Ambiente Cloud Ativo Permanentemente
+
+Não foi adotado manter a API exposta em provedor cloud com URL pública permanente porque isso gera custo recorrente em conta pessoal, principalmente por Application Load Balancer, Fargate, IPv4 público, logs e armazenamento de imagem.
+
+A alternativa escolhida foi entregar a aplicação containerizada, o pipeline de CI e a arquitetura AWS com Terraform/OpenTofu, permitindo que a infraestrutura seja provisionada de forma reproduzível por quem for avaliar ou operar a solução.
+
+O trade-off aceito é não disponibilizar uma URL pública ativa durante toda a avaliação, em troca de controle de custo e de uma entrega que demonstra como a aplicação é empacotada, testada e preparada para implantação.
 
 ## 9. Observabilidade
 
@@ -491,6 +505,8 @@ Outputs relevantes:
 
 O `terraform apply` não é executado automaticamente no CI. A decisão prioriza controle operacional e evita aplicar mudanças de infraestrutura sem revisão manual.
 
+Como a API não permanece exposta em cloud nesta entrega, o uso de Terraform/OpenTofu representa a forma reprodutível de provisionar a arquitetura AWS quando houver uma conta com orçamento aprovado para execução.
+
 ## 14. Swagger
 
 Swagger UI:
@@ -512,6 +528,8 @@ A documentação contém:
 - exemplos dos 4 casos oficiais;
 - respostas `valid=true` e `valid=false`;
 - documentação dos status `200`, `400` e `500`.
+
+Por esse motivo, não foi criada coleção Insomnia ou Postman. A execução manual da API é atendida pelo Swagger UI e pelos exemplos de chamada documentados neste README.
 
 ## 15. Testes
 
@@ -648,6 +666,8 @@ Ele executa:
 - Docker build.
 
 O fluxo de entrega integra GitHub Actions, Docker, ECR, ECS/Fargate e Terraform/OpenTofu conforme a arquitetura da solução.
+
+O deploy automatizado para AWS é estruturado em duas partes: build e validação da aplicação no CI, e provisionamento da infraestrutura por Terraform/OpenTofu. O `apply` da infraestrutura permanece como uma ação controlada, evitando criação automática de recursos pagos.
 
 ## 20. Engenharia de Prompt
 

@@ -61,7 +61,7 @@ variable "container_name" {
 variable "image_tag" {
   description = "Docker image tag deployed by the ECS task definition."
   type        = string
-  default     = "latest"
+  default     = "0.0.1-SNAPSHOT"
 }
 
 variable "task_cpu" {

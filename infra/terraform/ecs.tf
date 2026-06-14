@@ -12,9 +12,18 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name      = var.container_name
-      image     = "${aws_ecr_repository.app.repository_url}:${var.image_tag}"
-      essential = true
+      name                   = var.container_name
+      image                  = "${aws_ecr_repository.app.repository_url}:${var.image_tag}"
+      essential              = true
+      readonlyRootFilesystem = true
+
+      mountPoints = [
+        {
+          sourceVolume  = "tmp"
+          containerPath = "/tmp"
+          readOnly      = false
+        }
+      ]
 
       portMappings = [
         {
@@ -23,6 +32,17 @@ resource "aws_ecs_task_definition" "app" {
           protocol      = "tcp"
         }
       ]
+
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "bash -ec 'exec 3<>/dev/tcp/127.0.0.1/${var.container_port}; printf \"GET /actuator/health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3; grep -q \"200\" <&3'"
+        ]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -34,6 +54,10 @@ resource "aws_ecs_task_definition" "app" {
       }
     }
   ])
+
+  volume {
+    name = "tmp"
+  }
 }
 
 resource "aws_ecs_service" "app" {

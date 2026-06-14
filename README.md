@@ -365,6 +365,13 @@ Responsabilidades:
 - disponibilizar a imagem para o ECS Task Definition;
 - integrar autenticação e permissões com IAM.
 
+Configurações de segurança:
+
+- tags imutáveis no ECR para evitar sobrescrita silenciosa de uma imagem já publicada;
+- scan automático da imagem no push;
+- retenção limitada de imagens antigas por lifecycle policy;
+- uso de tags versionadas, como versão da aplicação ou SHA do commit, em vez de `latest`.
+
 Estimativa de custo:
 
 - O ECR cobra principalmente armazenamento das imagens.
@@ -404,6 +411,15 @@ Ela define:
 - configuração de logs;
 - health checks;
 - role de execução.
+
+Configurações de segurança e resiliência:
+
+- container executado com usuário não-root na imagem Docker;
+- root filesystem somente leitura na definição da task;
+- volume efêmero montado em `/tmp` para permitir escrita temporária sem liberar escrita no filesystem raiz;
+- health check do container em `/actuator/health`;
+- logs enviados para CloudWatch;
+- role de execução limitada ao necessário para pull da imagem e envio de logs.
 
 Configuração mínima adotada para este desafio:
 
@@ -450,6 +466,15 @@ Responsabilidades:
 - balancear tráfego entre múltiplas tasks;
 - permitir escalabilidade horizontal sem alterar a aplicação.
 
+Configurações de segurança:
+
+- Security Group do ALB aceita tráfego público somente na porta `80`;
+- Security Group das tasks aceita tráfego somente a partir do Security Group do ALB;
+- headers HTTP inválidos são descartados pelo ALB;
+- o Target Group usa health check no Actuator da aplicação.
+
+HTTPS não é habilitado nesta entrega porque exige domínio e certificado ACM associados ao ambiente. Em um ambiente produtivo, o listener HTTP deve redirecionar para HTTPS e o listener HTTPS deve utilizar certificado gerenciado pelo AWS Certificate Manager.
+
 Estimativa de custo:
 
 - O ALB cobra por hora de uso e por capacidade consumida.
@@ -494,6 +519,23 @@ Decisões de custo na infraestrutura:
 - Usar a menor task Fargate suficiente para a aplicação: `256 CPU / 512 MiB`.
 - Configurar retenção limitada de logs no CloudWatch.
 - Manter `terraform apply` como ação manual.
+
+Decisões de segurança aplicadas:
+
+- ECR com tags imutáveis e scan no push.
+- ECS Task Definition com root filesystem somente leitura.
+- Container executado como usuário não-root.
+- ECS Service acessível somente pelo ALB.
+- ALB descartando headers HTTP inválidos.
+
+Controles adicionais de produção:
+
+- Subnets privadas para as tasks ECS, sem IP público, usando NAT Gateway ou VPC Endpoints para saída.
+- HTTPS no ALB com certificado ACM e redirecionamento HTTP para HTTPS.
+- Access logs do ALB em S3 para auditoria.
+- AWS WAF associado ao ALB quando houver exposição pública contínua.
+
+Esses controles adicionais não são ativados por padrão porque adicionam dependências operacionais, como domínio, certificado, bucket S3, NAT Gateway ou VPC Endpoints, e podem aumentar o custo recorrente da solução.
 
 ## 13. Swagger
 
@@ -732,5 +774,3 @@ Health:
 ```text
 http://localhost:8080/actuator/health
 ```
-
-

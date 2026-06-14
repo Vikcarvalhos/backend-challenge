@@ -42,3 +42,18 @@ output "ecs_service_security_group_id" {
   description = "ID of the ECS service security group."
   value       = aws_security_group.ecs_service.id
 }
+
+output "alb_dns_name" {
+  description = "Public DNS name of the Application Load Balancer."
+  value       = aws_lb.app.dns_name
+}
+
+output "alb_arn" {
+  description = "ARN of the Application Load Balancer."
+  value       = aws_lb.app.arn
+}
+
+output "alb_target_group_arn" {
+  description = "ARN of the Application Load Balancer target group."
+  value       = aws_lb_target_group.app.arn
+}

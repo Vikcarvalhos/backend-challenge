@@ -324,57 +324,7 @@ http://localhost:8080/v3/api-docs
 
 Swagger UI foi escolhido como ferramenta oficial de execução por estar integrado à própria aplicação, documentar o contrato OpenAPI e permitir testar os cenários do desafio sem depender de coleção externa.
 
-## 8. Decisões Conscientemente Não Adotadas
-
-### HATEOAS
-
-Não foi adotado porque a API possui uma única operação de validação e não apresenta navegação entre recursos ou transições de estado.
-
-A alternativa escolhida foi uma API REST simples, com recurso, verbo HTTP e status codes claros.
-
-O trade-off aceito é não expor links de navegação, já que eles não agregam valor ao domínio deste desafio.
-
-### Kubernetes e Helm
-
-Não foram adotados porque aumentam a complexidade operacional para uma aplicação stateless de escopo reduzido.
-
-A alternativa escolhida foi AWS ECS com Fargate, que entrega orquestração gerenciada, execução de containers e escalabilidade com menos carga operacional.
-
-O trade-off aceito é menor portabilidade entre provedores em troca de simplicidade e integração direta com serviços AWS.
-
-### EKS
-
-Não foi adotado porque implicaria operar Kubernetes na AWS, mantendo a mesma complexidade que a solução evita.
-
-A alternativa escolhida foi ECS/Fargate.
-
-O trade-off aceito é abrir mão do ecossistema Kubernetes em favor de uma plataforma gerenciada mais simples para o contexto do desafio.
-
-### Jaeger e Zipkin
-
-Não foram adotados porque a solução possui um único serviço e não exige backend completo de tracing distribuído.
-
-A alternativa escolhida foi Micrometer Tracing com `traceId` e `spanId` nos logs.
-
-O trade-off aceito é não ter visualização gráfica de traces, mantendo correlação suficiente nos logs para este escopo.
-
-### Validação Criptográfica da Assinatura
-
-Não foi adotada porque o desafio não fornece chave secreta, chave pública, JWKS, emissor confiável ou algoritmo esperado.
-
-A alternativa escolhida foi validar estrutura, payload e claims.
-
-O trade-off aceito é não afirmar autenticidade criptográfica do token, mantendo a validação limitada às regras informadas.
-
-### Ambiente Cloud Ativo Permanentemente
-
-Não foi adotado manter a API exposta em provedor cloud com URL pública permanente porque isso gera custo recorrente em conta pessoal, principalmente por Application Load Balancer, Fargate, IPv4 público, logs e armazenamento de imagem.
-
-A alternativa escolhida foi entregar a aplicação containerizada, o pipeline de CI e a arquitetura AWS com Terraform/OpenTofu, permitindo que a infraestrutura seja provisionada de forma reproduzível por quem for avaliar ou operar a solução.
-
-O trade-off aceito é não disponibilizar uma URL pública ativa durante toda a avaliação, em troca de controle de custo e de uma entrega que demonstra como a aplicação é empacotada, testada e preparada para implantação.
-
-## 9. Observabilidade
+## 8. Observabilidade
 
 Logging:
 
@@ -404,7 +354,7 @@ INFO [traceId=..., spanId=...] JwtValidationService : JWT validated successfully
 WARN [traceId=..., spanId=...] JwtValidationService : Invalid JWT structure
 ```
 
-## 10. Amazon ECR
+## 9. Amazon ECR
 
 Amazon Elastic Container Registry armazena as imagens Docker da aplicação.
 
@@ -425,7 +375,7 @@ docker build
   -> ECS Task Definition
 ```
 
-## 11. AWS ECS e Fargate
+## 10. AWS ECS e Fargate
 
 ### ECS Cluster
 
@@ -466,7 +416,7 @@ O Fargate executa as tasks sem necessidade de gerenciar instâncias EC2.
 
 A escolha reduz operação de infraestrutura, mantendo foco no container, na configuração de recursos e na disponibilidade do serviço.
 
-## 12. Application Load Balancer
+## 11. Application Load Balancer
 
 O Application Load Balancer expõe a API publicamente e distribui tráfego para as tasks ECS.
 
@@ -478,7 +428,7 @@ Responsabilidades:
 - balancear tráfego entre múltiplas tasks;
 - permitir escalabilidade horizontal sem alterar a aplicação.
 
-## 13. Terraform/OpenTofu
+## 12. Terraform/OpenTofu
 
 A infraestrutura é descrita como código com Terraform/OpenTofu.
 
@@ -507,7 +457,7 @@ O `terraform apply` não é executado automaticamente no CI. A decisão prioriza
 
 Como a API não permanece exposta em cloud nesta entrega, o uso de Terraform/OpenTofu representa a forma reprodutível de provisionar a arquitetura AWS quando houver uma conta com orçamento aprovado para execução.
 
-## 14. Swagger
+## 13. Swagger
 
 Swagger UI:
 
@@ -531,7 +481,7 @@ A documentação contém:
 
 Por esse motivo, não foi criada coleção Insomnia ou Postman. A execução manual da API é atendida pelo Swagger UI e pelos exemplos de chamada documentados neste README.
 
-## 15. Testes
+## 14. Testes
 
 A suíte cobre:
 
@@ -563,7 +513,7 @@ cd app
 ./mvnw test
 ```
 
-## 16. Execução Local
+## 15. Execução Local
 
 Pré-requisitos:
 
@@ -590,7 +540,7 @@ Health check:
 Invoke-RestMethod http://localhost:8080/actuator/health
 ```
 
-## 17. Exemplo de Chamada
+## 16. Exemplo de Chamada
 
 PowerShell:
 
@@ -614,7 +564,7 @@ Resposta esperada:
 }
 ```
 
-## 18. Docker
+## 17. Docker
 
 Build da imagem:
 
@@ -647,7 +597,7 @@ O `Dockerfile` usa build multi-stage:
 - execução com usuário não-root;
 - porta `8080` exposta.
 
-## 19. CI/CD
+## 18. CI/CD
 
 O workflow fica em:
 
@@ -669,13 +619,13 @@ O fluxo de entrega integra GitHub Actions, Docker, ECR, ECS/Fargate e Terraform/
 
 O deploy automatizado para AWS é estruturado em duas partes: build e validação da aplicação no CI, e provisionamento da infraestrutura por Terraform/OpenTofu. O `apply` da infraestrutura permanece como uma ação controlada, evitando criação automática de recursos pagos.
 
-## 20. Engenharia de Prompt
+## 19. Engenharia de Prompt
 
 Durante o planejamento da solução, ferramentas de IA foram utilizadas para apoiar discussões sobre arquitetura, infraestrutura, observabilidade, testes e documentação.
 
 Todas as decisões finais foram revisadas criticamente e ajustadas ao escopo do desafio, priorizando aderência ao enunciado, simplicidade e boas práticas de engenharia.
 
-## 21. Comandos Úteis
+## 20. Comandos Úteis
 
 Testes:
 

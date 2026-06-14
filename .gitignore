@@ -13,6 +13,5 @@ target/
 .terraform/
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
 
 node_modules/

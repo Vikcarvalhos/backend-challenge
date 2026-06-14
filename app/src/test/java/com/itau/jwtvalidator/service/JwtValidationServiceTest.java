@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itau.jwtvalidator.validator.ClaimsValidator;
-import com.itau.jwtvalidator.validator.JwtClaimsExtractor;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;

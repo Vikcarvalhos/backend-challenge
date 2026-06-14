@@ -1,4 +1,4 @@
-package com.itau.jwtvalidator.validator;
+package com.itau.jwtvalidator.domain;
 
 public record ValidationResult(boolean valid, String reason) {
 

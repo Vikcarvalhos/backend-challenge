@@ -1,9 +1,8 @@
 package com.itau.jwtvalidator.service;
 
 import com.itau.jwtvalidator.domain.JwtClaims;
+import com.itau.jwtvalidator.domain.ValidationResult;
 import com.itau.jwtvalidator.validator.ClaimsValidator;
-import com.itau.jwtvalidator.validator.JwtClaimsExtractor;
-import com.itau.jwtvalidator.validator.ValidationResult;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

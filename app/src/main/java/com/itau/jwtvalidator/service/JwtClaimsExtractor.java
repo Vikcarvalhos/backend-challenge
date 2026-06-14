@@ -1,4 +1,4 @@
-package com.itau.jwtvalidator.validator;
+package com.itau.jwtvalidator.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +35,7 @@ public class JwtClaimsExtractor {
 
         try {
             byte[] payload = Base64.getUrlDecoder().decode(parts[1]);
-            Map<String, String> values = objectMapper.readValue(
+            Map<String, Object> values = objectMapper.readValue(
                     new String(payload, StandardCharsets.UTF_8),
                     new TypeReference<>() {
                     }

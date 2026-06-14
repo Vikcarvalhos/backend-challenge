@@ -193,7 +193,8 @@ CI/CD:
 .
 |-- .github/
 |   `-- workflows/
-|       `-- ci.yml
+|       |-- ci.yml
+|       `-- deploy.yml
 |-- app/
 |   |-- Dockerfile
 |   |-- pom.xml
@@ -202,6 +203,7 @@ CI/CD:
 |   `-- src/
 |-- infra/
 |   `-- terraform/
+|       `-- backend.tf.example
 `-- README.md
 ```
 
@@ -716,6 +718,19 @@ AWS_REGION
 
 O workflow usa autenticação por OIDC entre GitHub Actions e AWS. Essa abordagem evita armazenar access keys longas no GitHub e permite limitar permissões por IAM Role.
 
+A role informada em `AWS_ROLE_TO_ASSUME` deve confiar no provedor OIDC do GitHub Actions e restringir o acesso ao repositório da solução. Exemplo de condição esperada na trust policy:
+
+```json
+{
+  "StringLike": {
+    "token.actions.githubusercontent.com:sub": "repo:<OWNER>/<REPOSITORY>:*"
+  },
+  "StringEquals": {
+    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+  }
+}
+```
+
 Permissões AWS necessárias para o deploy:
 
 - ECR;
@@ -740,6 +755,25 @@ infra/terraform/backend.tf.example
 ```
 
 Para usar esse exemplo, crie previamente o bucket de estado, copie o conteúdo para `backend.tf`, ajuste `bucket`, `key` e `region`, e então execute `terraform init`.
+
+Comandos Terraform para execução local:
+
+```powershell
+cd infra/terraform
+terraform init
+terraform fmt -check -recursive
+terraform validate
+terraform plan -var-file="terraform.tfvars"
+terraform apply -var-file="terraform.tfvars"
+terraform destroy -var-file="terraform.tfvars"
+```
+
+Sem Terraform instalado localmente, os comandos de validação podem ser executados via Docker:
+
+```powershell
+docker run --rm -v "${PWD}\infra\terraform:/workspace" -w /workspace hashicorp/terraform:1.15.6 fmt -check -recursive
+docker run --rm -v "${PWD}\infra\terraform:/workspace" -w /workspace hashicorp/terraform:1.15.6 validate
+```
 
 Fluxo manual recomendado para avaliadores:
 
